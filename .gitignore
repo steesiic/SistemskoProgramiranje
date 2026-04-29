@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+packages/
+*.nupkg
+
+.DS_Store
+Thumbs.db
+
+WordCountFiles/
