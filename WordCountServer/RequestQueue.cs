@@ -25,13 +25,10 @@ namespace WordCountServer
             {
                 while (_queue.Count >= _maxSize)
                 {
-                    Console.WriteLine("red je pun! ceka se");
+                    Console.WriteLine("red je pun, sacekaj!");
                     Monitor.Wait(_lock);
                 }
-
                 _queue.Enqueue(context);
-                Console.WriteLine($"dodat zahtev u red, sada ih je: {_queue.Count}");
-
                 Monitor.Pulse(_lock);
             }
         }
@@ -44,12 +41,9 @@ namespace WordCountServer
                 {
                     Monitor.Wait(_lock);
                 }
-
                 HttpListenerContext context = _queue.Dequeue();
-                Console.WriteLine($"zahtev izvucen iz reda, sada ih je: {_queue.Count}");
 
                 Monitor.Pulse(_lock);
-
                 return context;
             }
         }
