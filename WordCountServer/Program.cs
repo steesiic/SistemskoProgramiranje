@@ -10,7 +10,7 @@ namespace WordCountServer
     {
         static void Main(string[] args)
         {
-            string rootFolder = @"D:\faks\TRECA GODINA\sistemsko programiranje\Projekat\WordCountFiles";  //folder sa primerima
+            string rootFolder = @"C:\Users\Jetko\Desktop\FAKS\III godina\Sistemsko\SistemskoProgramiranje\WordCountFiles";  //folder sa primerima
 
             Server server = new Server("http://localhost:5050/", rootFolder);
             server.Start();

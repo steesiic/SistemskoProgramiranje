@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace WordCountServer
 {
@@ -14,8 +11,8 @@ namespace WordCountServer
         private bool _running;
         private FileSearcher _fileSearcher;
         private RequestQueue _requestQueue;
-
-        private int _workerCount = 4; //br niti koje ce obraditi zahteve
+        private Cache _cache;
+        private int _workerCount = 4;
 
         public Server(string prefix, string rootFolder)
         {
@@ -23,8 +20,8 @@ namespace WordCountServer
             _listener = new HttpListener();
             _listener.Prefixes.Add(prefix);
             _fileSearcher = new FileSearcher(rootFolder);
-
             _requestQueue = new RequestQueue(10);
+            _cache = new Cache(5);
         }
 
         public void Start()
@@ -44,7 +41,6 @@ namespace WordCountServer
             while (_running)
             {
                 HttpListenerContext context = _listener.GetContext();
-                Console.WriteLine("nova konekcija primljena, dodaje se u red");
                 _requestQueue.Enqueue(context);
             }
         }
@@ -55,18 +51,22 @@ namespace WordCountServer
 
             while (_running)
             {
-                // uzima sl zahtev(blokira ako nema nista)
                 HttpListenerContext context = _requestQueue.Dequeue();
 
                 string rawUrl = context.Request.Url.AbsolutePath;
                 string fileName = rawUrl.TrimStart('/');
 
-                Console.WriteLine($"worker {workerId} obradjuje: {fileName}");
+                if (fileName == "favicon.ico")
+                {
+                    context.Response.StatusCode = 404;
+                    context.Response.OutputStream.Close();
+                    continue;
+                }
 
+                Console.WriteLine($"worker {workerId} obradjuje: {fileName}");
                 string response = ProcessRequest(fileName);
                 SendResponse(context, response);
-
-                Console.WriteLine($"worker {workerId} zavrsio obradu: {fileName}");
+                Console.WriteLine($"worker {workerId} zavrsio: {fileName}");
             }
         }
 
@@ -75,18 +75,34 @@ namespace WordCountServer
             if (string.IsNullOrWhiteSpace(fileName))
                 return "greska! nije naveden naziv fajla";
 
+            if (_cache.TryGetOrReserve(fileName, out int cachedResult))
+            {
+                if (cachedResult == -1)
+                    return $"greska! fajl '{fileName}' nije pronadjen";
+                if (cachedResult == 0)
+                    return $"fajl '{fileName}' ne sadrzi reci sa vise suglasnika nego samoglasnika";
+                return $"fajl: {fileName}\nbroj reci (iz kesa): {cachedResult}";
+            }
+
+            // Thread.Sleep(3000); // odkomentarisi za testiranje cache stampede
+
             string fullPath = _fileSearcher.FindFile(fileName);
 
             if (fullPath == null)
+            {
+                _cache.Set(fileName, -1);
                 return $"greska! fajl '{fileName}' nije pronadjen";
+            }
 
             string content = _fileSearcher.ReadFile(fullPath);
             int count = WordCounter.CountWords(content);
 
+            _cache.Set(fileName, count);
+
             if (count == 0)
                 return $"fajl '{fileName}' ne sadrzi reci sa vise suglasnika nego samoglasnika";
 
-            return $"fajl: {fileName}\n putanja: {fullPath}\nbroj reci: {count}";
+            return $"fajl: {fileName}\nputanja: {fullPath}\nbroj reci: {count}";
         }
 
         public void Stop()
