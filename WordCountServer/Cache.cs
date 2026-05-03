@@ -16,7 +16,6 @@ namespace WordCountServer
             _maxSize = maxSize;
         }
 
-        //true ako je rezultat nadjen u kesu, false ako treba obrada
         public bool TryGetOrReserve(string fileName, out int result)
         {
             lock (_lock)
@@ -25,14 +24,15 @@ namespace WordCountServer
                 {
                     while (!entry.IsReady)
                     {
-                        Console.WriteLine($"[KES] '{fileName}' se vec obradjuje, sacekaj!");
+                        Logger.Cache($"'{fileName}' se vec obradjuje, sacekaj!");
                         Monitor.Wait(_lock);
                     }
+
                     _lruList.Remove(fileName);
                     _lruList.AddLast(fileName);
 
                     result = entry.Result;
-                    Console.WriteLine($"[KES] Pogodak za '{fileName}' = {result}");
+                    Logger.Cache($"pogodak za '{fileName}' = {result}");
                     return true;
                 }
 
@@ -74,7 +74,7 @@ namespace WordCountServer
             string oldest = _lruList.First.Value;
             _lruList.RemoveFirst();
             _cache.Remove(oldest);
-            Console.WriteLine($"[KES] Izbacen '{oldest}' (LRU)");
+            Logger.Cache($"izbacen '{oldest}' (LRU)");
         }
     }
 }

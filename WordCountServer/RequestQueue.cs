@@ -4,30 +4,31 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace WordCountServer
 {
     class RequestQueue
     {
         private Queue<HttpListenerContext> _queue = new Queue<HttpListenerContext>();
-
-        private int _maxSize; //maks zahteva koji mogu cekati
-
+        private int _maxSize;
         private object _lock = new object();
 
         public RequestQueue(int maxSize)
         {
             _maxSize = maxSize;
         }
+
         public void Enqueue(HttpListenerContext context)
         {
             lock (_lock)
             {
                 while (_queue.Count >= _maxSize)
                 {
-                    Console.WriteLine("red je pun, sacekaj!");
+                    Logger.Warning("red je pun, sacekaj!");
                     Monitor.Wait(_lock);
                 }
+
                 _queue.Enqueue(context);
                 Monitor.Pulse(_lock);
             }
@@ -41,8 +42,8 @@ namespace WordCountServer
                 {
                     Monitor.Wait(_lock);
                 }
-                HttpListenerContext context = _queue.Dequeue();
 
+                HttpListenerContext context = _queue.Dequeue();
                 Monitor.Pulse(_lock);
                 return context;
             }

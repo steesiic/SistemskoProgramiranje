@@ -28,7 +28,7 @@ namespace WordCountServer
         {
             _listener.Start();
             _running = true;
-            Console.WriteLine($"server pokrenut na: {_prefix}");
+            Logger.Info($"server pokrenut na: {_prefix}");
 
             for (int i = 0; i < _workerCount; i++)
             {
@@ -36,7 +36,7 @@ namespace WordCountServer
                 ThreadPool.QueueUserWorkItem(_ => WorkerLoop(workerId));
             }
 
-            Console.WriteLine($"pokrenuto je {_workerCount} worker niti");
+            Logger.Info($"pokrenuto {_workerCount} worker niti");
 
             while (_running)
             {
@@ -47,7 +47,7 @@ namespace WordCountServer
 
         private void WorkerLoop(int workerId)
         {
-            Console.WriteLine($"worker {workerId} spreman");
+            Logger.Info($"worker {workerId} spreman");
 
             while (_running)
             {
@@ -63,10 +63,10 @@ namespace WordCountServer
                     continue;
                 }
 
-                Console.WriteLine($"worker {workerId} obradjuje: {fileName}");
+                Logger.Info($"worker {workerId} obradjuje: {fileName}");
                 string response = ProcessRequest(fileName);
                 SendResponse(context, response);
-                Console.WriteLine($"worker {workerId} zavrsio: {fileName}");
+                Logger.Info($"worker {workerId} zavrsio: {fileName}");
             }
         }
 

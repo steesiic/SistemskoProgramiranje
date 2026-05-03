@@ -10,15 +10,19 @@ namespace WordCountServer
     {
         static void Main(string[] args)
         {
-            string rootFolder = @"C:\Users\Jetko\Desktop\FAKS\III godina\Sistemsko\SistemskoProgramiranje\WordCountFiles";  //folder sa primerima
+            //folderi za primere i logove
+            string rootFolder = @"C:\Users\Jetko\Desktop\FAKS\III godina\Sistemsko\SistemskoProgramiranje\WordCountFiles"; 
+            string logFolder = @"C:\Users\Jetko\Desktop\FAKS\III godina\Sistemsko\SistemskoProgramiranje\Logs";
+
+            Logger.Init(logFolder);
+            Logger.Info("Aplikacija pokrenuta.");
 
             Server server = new Server("http://localhost:5050/", rootFolder);
             server.Start();
 
-            Console.WriteLine("pritisnite enter za kraj");
             Console.ReadLine();
-
             server.Stop();
+            Logger.Info("Aplikacija zaustavljena.");
         }
     }
 }
