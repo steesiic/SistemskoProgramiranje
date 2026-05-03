@@ -63,10 +63,26 @@ namespace WordCountServer
                     continue;
                 }
 
-                Logger.Info($"worker {workerId} obradjuje: {fileName}");
-                string response = ProcessRequest(fileName);
-                SendResponse(context, response);
-                Logger.Info($"worker {workerId} zavrsio: {fileName}");
+                try
+                {
+                    Logger.Info($"worker {workerId} obradjuje: {fileName}");
+                    string response = ProcessRequest(fileName);
+                    SendResponse(context, response);
+                    Logger.Info($"worker {workerId} zavrsio: {fileName}");
+                }
+                catch (Exception ex) 
+                {
+                    Logger.Error($"worker {workerId} greska pri obradi '{fileName}': {ex.Message}");
+                    try
+                    {
+                        SendResponse(context, $"greska na serveru: {ex.Message}");
+                    }
+                    catch
+                    {
+                        //ako ni slanje odgovora ne uspe samo nastavimo dalje
+                    }
+                }
+       
             }
         }
 
@@ -84,7 +100,7 @@ namespace WordCountServer
                 return $"fajl: {fileName}\nbroj reci (iz kesa): {cachedResult}";
             }
 
-            // Thread.Sleep(3000); // odkomentarisi za testiranje cache stampede
+            
 
             string fullPath = _fileSearcher.FindFile(fileName);
 
@@ -93,6 +109,8 @@ namespace WordCountServer
                 _cache.Set(fileName, -1);
                 return $"greska! fajl '{fileName}' nije pronadjen";
             }
+
+            //Thread.Sleep(3000); // odkomentarisi za testiranje cache stampede
 
             string content = _fileSearcher.ReadFile(fullPath);
             int count = WordCounter.CountWords(content);
