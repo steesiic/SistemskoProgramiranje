@@ -11,12 +11,6 @@ namespace WordCountServer
         static void Main(string[] args)
         {
             //folderi za primere i logove
-            /*jodza:
-                    @"C:\Users\Jetko\Desktop\FAKS\III godina\Sistemsko\SistemskoProgramiranje\WordCountFiles";  
-                    @"C:\Users\Jetko\Desktop\FAKS\III godina\Sistemsko\SistemskoProgramiranje\Logs";*/
-            /*nidza:
-                    @"D:\faks\TRECA GODINA\sistemsko programiranje\Projekat\WordCountFiles";
-                    @"D:\faks\TRECA GODINA\sistemsko programiranje\Projekat\Logs";*/
             string rootFolder = @"D:\faks\TRECA GODINA\sistemsko programiranje\Projekat\WordCountFiles"; 
             string logFolder = @"D:\faks\TRECA GODINA\sistemsko programiranje\Projekat\Logs";
 

@@ -12,7 +12,7 @@ namespace WordCountServer
         private FileSearcher _fileSearcher;
         private RequestQueue _requestQueue;
         private Cache _cache;
-        private int _workerCount = 4;
+        private int _workerCount = 4;       
 
         public Server(string prefix, string rootFolder)
         {
@@ -65,6 +65,7 @@ namespace WordCountServer
 
                 try
                 {
+                    Thread.Sleep(1000); //simulira sporu obradu
                     Logger.Info($"worker {workerId} obradjuje: {fileName}");
                     string response = ProcessRequest(fileName);
                     SendResponse(context, response);
